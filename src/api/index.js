@@ -1,3 +1,4 @@
+// src/api/index.js
 import express from "express";
 import cors from "cors";
 import config from "./config/config.js";
@@ -15,6 +16,7 @@ app.use(
 
 app.use(express.json());
 
+// Logging middleware
 app.use((req, res, next) => {
   console.log("Request Method:", req.method);
   console.log("Request Path:", req.path);
@@ -23,13 +25,14 @@ app.use((req, res, next) => {
   next();
 });
 
+// Route handling
 app.use("/api", router);
 
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error("Error:", err);
   res.status(500).json({ error: err.message || "Something went wrong" });
 });
 
-app.listen(config.PORT, () => {
-  console.log(`Server running on port ${config.PORT}`);
-});
+// Export the app for Vercel's serverless function handler
+export default app;
