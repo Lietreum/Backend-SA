@@ -1,0 +1,107 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum LeaveType {
+  PERMISSION
+  SICK
+  HOLIDAY
+  OFFICEDUTY
+  WFH
+}
+
+enum LeaveStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum NotificationType {
+  LEAVE_APPROVAL
+  PRESENCE_DELAY
+}
+
+enum PresenceStatus {
+  PRESENT
+  ABSENT
+  LATE
+}
+
+model Account {
+  userID          Int              @id @default(autoincrement())
+  name            String
+  email           String           @unique
+  password        String
+  phone           String?
+  adress          String?
+  yearscareer     String?
+  position        String?
+  division        String?
+  facePhoto       String?
+  role            String           @default("ADMIN")
+  isApproved      Boolean          @default(false)
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  presences       Presence[]
+  notifications   Notification[]
+  leaverequest    LeaveRequest[]
+  leaveBalance    Int              @default(12) 
+  lastReset       DateTime         @default(now()) 
+  carryOver       Int              @default(0)
+}
+
+
+model Schedule {
+  id        Int      @id @default(autoincrement())
+  date      DateTime
+  startTime DateTime
+  endTime   DateTime
+}
+
+
+model Presence {
+  id               Int      @id @default(autoincrement())
+  userId         Int
+  checkInTime     DateTime
+  checkInLocation String
+  checkOutTime    DateTime?
+  checkOutLocation String?
+  status          String
+  user            Account  @relation(fields: [userId], references: [userID])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LeaveRequest {
+  id          Int         @id @default(autoincrement())
+  userId      Int
+  user        Account     @relation(fields: [userId], references: [userID])
+  type        LeaveType
+  startDate   DateTime
+  endDate     DateTime
+  reason      String
+  status      LeaveStatus @default(PENDING)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+
+model Notification {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  message   String
+  isRead    Boolean  @default(false)
+  type      NotificationType
+  Account   Account  @relation(fields: [userId], references: [userID])
+  createdAt DateTime @default(now())
+}
